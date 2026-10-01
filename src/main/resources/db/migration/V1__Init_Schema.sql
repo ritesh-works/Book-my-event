@@ -20,10 +20,7 @@ CREATE TABLE seats (
     confirmed_by VARCHAR(255),
     confirmed_at TIMESTAMP,
     created_at TIMESTAMP NOT NULL,
-    UNIQUE(show_id, seat_number),
-    INDEX idx_show_seat (show_id, seat_number),
-    INDEX idx_show_status (show_id, status),
-    INDEX idx_held_until (held_until)
+    UNIQUE(show_id, seat_number)
 );
 
 CREATE TABLE reservations (
@@ -35,9 +32,7 @@ CREATE TABLE reservations (
     status VARCHAR(50) NOT NULL DEFAULT 'CONFIRMED',
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
-    UNIQUE(user_id, idempotency_key),
-    INDEX idx_user_show (user_id, show_id),
-    INDEX idx_idempotency (user_id, idempotency_key)
+    UNIQUE(user_id, idempotency_key)
 );
 
 CREATE TABLE reservation_seats (
@@ -46,6 +41,11 @@ CREATE TABLE reservation_seats (
     PRIMARY KEY (reservation_id, seat_id)
 );
 
--- Create indexes for performance
+-- Create indexes for performance (PostgreSQL uses CREATE INDEX, not inline INDEX)
+CREATE INDEX idx_show_seat ON seats(show_id, seat_number);
+CREATE INDEX idx_show_status ON seats(show_id, status);
+CREATE INDEX idx_held_until ON seats(held_until);
+CREATE INDEX idx_user_show ON reservations(user_id, show_id);
+CREATE INDEX idx_idempotency ON reservations(user_id, idempotency_key);
 CREATE INDEX idx_reservations_status ON reservations(status);
 CREATE INDEX idx_seats_status_show ON seats(status, show_id);
