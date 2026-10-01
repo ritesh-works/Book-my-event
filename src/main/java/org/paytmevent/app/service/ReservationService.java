@@ -82,11 +82,13 @@ public class ReservationService {
                     .orElseThrow(() -> new SeatNotFoundException("Seat not found: " + seatNumber));
 
             // Atomic confirmation: UPDATE ... WHERE status = 'AVAILABLE'
-            // Only one transaction succeeds; others get empty Optional
-            Optional<Seat> confirmedSeat = seatRepository.atomicConfirmSeat(showId, seatNumber, userId);
-            
-            if (confirmedSeat.isPresent()) {
-                confirmedSeats.add(confirmedSeat.get());
+            // Only one transaction succeeds; others get rowCount = 0
+            int updated = seatRepository.atomicConfirmSeat(showId, seatNumber, userId);
+
+            if (updated > 0) {
+                Seat confirmedSeat = seatRepository.findByShowIdAndSeatNumber(showId, seatNumber)
+                        .orElseThrow(() -> new SeatNotFoundException("Seat not found after atomic confirmation: " + seatNumber));
+                confirmedSeats.add(confirmedSeat);
                 log.debug("Seat {} atomically confirmed for user {}", seatNumber, userId);
             } else {
                 // Another thread won the race for this seat

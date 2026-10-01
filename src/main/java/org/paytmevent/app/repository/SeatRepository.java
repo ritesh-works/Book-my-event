@@ -26,20 +26,18 @@ public interface SeatRepository extends JpaRepository<Seat, UUID> {
     List<Seat> findAllByShowIdOrderedBySeatNumber(@Param("showId") UUID showId);
 
     @Modifying
-    @Query(value = "UPDATE seats SET status = 'CONFIRMED', confirmed_by = :userId, confirmed_at = NOW() " +
-            "WHERE show_id = :showId AND seat_number = :seatNumber AND status = 'AVAILABLE' " +
-            "RETURNING *", nativeQuery = true)
-    Optional<Seat> atomicConfirmSeat(
+    @Query("UPDATE Seat s SET s.status = 'CONFIRMED', s.confirmedBy = :userId, s.confirmedAt = CURRENT_TIMESTAMP " +
+            "WHERE s.show.id = :showId AND s.seatNumber = :seatNumber AND s.status = 'AVAILABLE'")
+    int atomicConfirmSeat(
             @Param("showId") UUID showId,
             @Param("seatNumber") String seatNumber,
             @Param("userId") String userId
     );
 
     @Modifying
-    @Query(value = "UPDATE seats SET status = 'HELD', held_by = :userId, held_until = :expiryTime " +
-            "WHERE show_id = :showId AND seat_number = :seatNumber AND status = 'AVAILABLE' " +
-            "RETURNING *", nativeQuery = true)
-    Optional<Seat> atomicHoldSeat(
+    @Query("UPDATE Seat s SET s.status = 'HELD', s.heldBy = :userId, s.heldUntil = :expiryTime " +
+            "WHERE s.show.id = :showId AND s.seatNumber = :seatNumber AND s.status = 'AVAILABLE'")
+    int atomicHoldSeat(
             @Param("showId") UUID showId,
             @Param("seatNumber") String seatNumber,
             @Param("userId") String userId,
