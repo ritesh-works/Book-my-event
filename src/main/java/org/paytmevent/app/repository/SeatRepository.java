@@ -25,6 +25,7 @@ public interface SeatRepository extends JpaRepository<Seat, UUID> {
     @Query("SELECT s FROM Seat s WHERE s.show.id = :showId ORDER BY s.seatNumber")
     List<Seat> findAllByShowIdOrderedBySeatNumber(@Param("showId") UUID showId);
 
+    @Modifying
     @Query(value = "UPDATE seats SET status = 'CONFIRMED', confirmed_by = :userId, confirmed_at = NOW() " +
             "WHERE show_id = :showId AND seat_number = :seatNumber AND status = 'AVAILABLE' " +
             "RETURNING *", nativeQuery = true)
@@ -34,6 +35,7 @@ public interface SeatRepository extends JpaRepository<Seat, UUID> {
             @Param("userId") String userId
     );
 
+    @Modifying
     @Query(value = "UPDATE seats SET status = 'HELD', held_by = :userId, held_until = :expiryTime " +
             "WHERE show_id = :showId AND seat_number = :seatNumber AND status = 'AVAILABLE' " +
             "RETURNING *", nativeQuery = true)

@@ -77,29 +77,20 @@ public class ReservationService {
         List<String> failedSeats = new ArrayList<>();
 
         for (String seatNumber : requestedSeats) {
-            Seat seat = seatRepository.findByShowIdAndSeatNumber(showId, seatNumber)
+            // Validate seat exists first
+            seatRepository.findByShowIdAndSeatNumber(showId, seatNumber)
                     .orElseThrow(() -> new SeatNotFoundException("Seat not found: " + seatNumber));
 
             // Atomic confirmation: UPDATE ... WHERE status = 'AVAILABLE'
-            // Only one user can succeed; others get 0 rows affected
-            if (seat.getStatus() == SeatStatus.AVAILABLE) {
-                try {
-                    // In a real concurrent scenario, this should use the native query
-                    // For now, we use a row lock via pessimistic locking
-                    seat.setStatus(SeatStatus.CONFIRMED);
-                    seat.setConfirmedBy(userId);
-                    seat.setConfirmedAt(LocalDateTime.now());
-                    seatRepository.save(seat);
-                    confirmedSeats.add(seat);
-                } catch (Exception e) {
-                    // Another thread won the race
-                    log.debug("Seat {} already taken in race", seatNumber);
-                    failedSeats.add(seatNumber);
-                    metrics.recordDecline("seat_taken");
-                }
+            // Only one transaction succeeds; others get empty Optional
+            Optional<Seat> confirmedSeat = seatRepository.atomicConfirmSeat(showId, seatNumber, userId);
+            
+            if (confirmedSeat.isPresent()) {
+                confirmedSeats.add(confirmedSeat.get());
+                log.debug("Seat {} atomically confirmed for user {}", seatNumber, userId);
             } else {
-                // Seat already held or confirmed
-                log.debug("Seat {} not available. Status: {}", seatNumber, seat.getStatus());
+                // Another thread won the race for this seat
+                log.debug("Seat {} already taken (another user won the race)", seatNumber);
                 failedSeats.add(seatNumber);
                 metrics.recordDecline("seat_taken");
             }
