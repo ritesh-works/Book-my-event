@@ -5,7 +5,7 @@
 
 BASE_URL="${1:-http://localhost:8080}"
 SHOW_ID=""
-CONCURRENT_USERS=500
+CONCURRENT_USERS=20000
 SEATS_PER_SHOW=100
 HOT_SEAT="A1"  # Most users will fight for this seat
 
