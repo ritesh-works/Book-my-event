@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -15,10 +16,10 @@ import java.util.List;
 @Builder
 public class ReservationDTO {
     @JsonProperty("reservation_id")
-    private String reservationId;
+    private UUID reservationId;
 
     @JsonProperty("show_id")
-    private String showId;
+    private UUID showId;
 
     @JsonProperty("user_id")
     private String userId;

@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/shows")
 @Slf4j
@@ -32,7 +34,8 @@ public class ShowController {
     @GetMapping("/{id}")
     public ResponseEntity<ShowDTO> getShow(@PathVariable String id) {
         log.debug("Fetching show: {}", id);
-        ShowDTO show = showService.getShow(id);
+        UUID showId = UUID.fromString(id);
+        ShowDTO show = showService.getShow(showId);
         return ResponseEntity.ok(show);
     }
 
@@ -46,7 +49,8 @@ public class ShowController {
             log.info("Reserve request from user {} for show {}, seats: {}", 
                     userId, id, request.getSeats());
 
-            ReservationDTO reservation = reservationService.reserveSeats(id, userId, request);
+            UUID showId = UUID.fromString(id);
+            ReservationDTO reservation = reservationService.reserveSeats(showId, userId, request);
             return ResponseEntity.status(HttpStatus.CREATED).body(reservation);
 
         } catch (PerUserLimitExceededException e) {
@@ -78,7 +82,8 @@ public class ShowController {
 
         try {
             log.info("Cancel request for reservation {} from user {}", id, userId);
-            reservationService.cancelReservation(id, userId);
+            UUID reservationId = UUID.fromString(id);
+            reservationService.cancelReservation(reservationId, userId);
             return ResponseEntity.noContent().build();
 
         } catch (UnauthorizedException e) {

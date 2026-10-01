@@ -6,12 +6,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class SeatDTO {
-    private String id;
+    private UUID id;
 
     @JsonProperty("seat_number")
     private String seatNumber;

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Table(name = "reservations", indexes = {
@@ -21,7 +22,7 @@ import java.util.Set;
 public class Reservation {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "show_id", nullable = false)
@@ -33,7 +34,7 @@ public class Reservation {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "reservation_seats", joinColumns = @JoinColumn(name = "reservation_id"))
     @Column(name = "seat_id")
-    private Set<String> seatIds;
+    private Set<UUID> seatIds;
 
     @Column(nullable = false)
     private long amountPaise;

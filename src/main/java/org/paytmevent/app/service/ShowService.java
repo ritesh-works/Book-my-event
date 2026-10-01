@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -55,7 +56,7 @@ public class ShowService {
     }
 
     @Transactional(readOnly = true)
-    public ShowDTO getShow(String showId) {
+    public ShowDTO getShow(UUID showId) {
         showRepository.findById(showId)
                 .orElseThrow(() -> new ShowNotFoundException("Show not found: " + showId));
         return reservationService.getShowState(showId);

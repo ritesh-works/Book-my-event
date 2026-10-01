@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -38,7 +39,7 @@ public class ReservationService {
     }
 
     @Transactional
-    public ReservationDTO reserveSeats(String showId, String userId, ReserveSeatsRequest request) {
+    public ReservationDTO reserveSeats(UUID showId, String userId, ReserveSeatsRequest request) {
         String idempotencyKey = request.getIdempotencyKey();
 
         // Step 1: Check if this exact request was already processed (idempotency)
@@ -137,7 +138,7 @@ public class ReservationService {
     }
 
     @Transactional
-    public void cancelReservation(String reservationId, String userId) {
+    public void cancelReservation(UUID reservationId, String userId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ReservationNotFoundException("Reservation not found"));
 
@@ -151,7 +152,7 @@ public class ReservationService {
         }
 
         // Release all seats
-        for (String seatId : reservation.getSeatIds()) {
+        for (UUID seatId : reservation.getSeatIds()) {
             Seat seat = seatRepository.findById(seatId)
                     .orElseThrow(() -> new SeatNotFoundException("Seat not found"));
             seat.setStatus(SeatStatus.AVAILABLE);
@@ -166,7 +167,7 @@ public class ReservationService {
     }
 
     @Transactional(readOnly = true)
-    public ShowDTO getShowState(String showId) {
+    public ShowDTO getShowState(UUID showId) {
         Show show = showRepository.findById(showId)
                 .orElseThrow(() -> new ShowNotFoundException("Show not found: " + showId));
 
@@ -203,7 +204,7 @@ public class ReservationService {
                 .seats(reservation.getSeatIds().stream()
                         .map(seatId -> seatRepository.findById(seatId)
                                 .map(Seat::getSeatNumber)
-                                .orElse(seatId))
+                                .orElse(seatId.toString()))
                         .toList())
                 .amountPaise(reservation.getAmountPaise())
                 .status(reservation.getStatus().toString())

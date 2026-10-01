@@ -7,20 +7,21 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface ReservationRepository extends JpaRepository<Reservation, String> {
+public interface ReservationRepository extends JpaRepository<Reservation, UUID> {
 
     @Query("SELECT r FROM Reservation r WHERE r.userId = :userId AND r.idempotencyKey = :key AND r.show.id = :showId")
     Optional<Reservation> findByUserIdAndIdempotencyKeyAndShowId(
             @Param("userId") String userId,
             @Param("key") String idempotencyKey,
-            @Param("showId") String showId
+            @Param("showId") UUID showId
     );
 
     @Query("SELECT COUNT(r) FROM Reservation r WHERE r.userId = :userId AND r.show.id = :showId AND r.status = 'CONFIRMED'")
     long countConfirmedReservationsByUserAndShow(
             @Param("userId") String userId,
-            @Param("showId") String showId
+            @Param("showId") UUID showId
     );
 }
